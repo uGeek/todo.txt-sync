@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+# todo.txt-sync v0.1 . Synchronize your todo.txt file with another by context or project
+# Copyright (C) 2020 Angel. uGeek
+# ugeekpodcast@gmail.com
+#
+#
+
+CONTEXTO="@casa"
+TIEMPO_ACTUALIZACION="300"  # 5 minutos
+
+ARCHIVO1=~/syncthing/todo/todo.txt
+ARCHIVO2=~/syncthing/todo2/todo.txt
+ARCHIVO_CONTEXTO=~/.config/todotxt-sync/contexto.txt
+CARPETA_CONFIGURACION=~/.config/todotxt-sync
+
+
+
+
+mkdir -p "$CARPETA_CONFIGURACION"
+touch ""$ARCHIVO_CONTEXTO""
+
+cat "$ARCHIVO1" "$ARCHIVO2" | grep $CONTEXTO | awk '!($0 in a) {a[$0];print}' > "$ARCHIVO_CONTEXTO" 
+cat "$ARCHIVO1" "$ARCHIVO2" | grep $CONTEXTO | awk '!($0 in a) {a[$0];print}' > "$CARPETA_CONFIGURACION"/txt1.txt 
+cat "$ARCHIVO1" "$ARCHIVO2" | grep $CONTEXTO | awk '!($0 in a) {a[$0];print}' > "$CARPETA_CONFIGURACION"/txt2.txt 
+
+while :
+do
+  
+    if [ "$(grep "$CONTEXTO" ""$ARCHIVO1"")" != "$(cat ""$ARCHIVO_CONTEXTO"")" ]; then    
+    echo "Sincronizando todo.txt"
+    grep $CONTEXTO "$ARCHIVO1" > "$ARCHIVO_CONTEXTO"
+    grep -v $CONTEXTO "$ARCHIVO1" > "$CARPETA_CONFIGURACION"/todo-a.txt
+    cat "$CARPETA_CONFIGURACION"/todo-a.txt "$ARCHIVO_CONTEXTO" > "$ARCHIVO1"
+    grep -v $CONTEXTO "$ARCHIVO2" > "$CARPETA_CONFIGURACION"/todo-a2.txt
+    cat "$CARPETA_CONFIGURACION"/todo-a2.txt "$ARCHIVO_CONTEXTO" > "$ARCHIVO2"   
+fi
+
+if [ "$(grep "$CONTEXTO" ""$ARCHIVO2"")" != "$(cat ""$ARCHIVO_CONTEXTO"")" ]; then    
+    echo "Sincronizando todo.txt"
+    grep $CONTEXTO "$ARCHIVO2" > "$ARCHIVO_CONTEXTO"
+    grep -v $CONTEXTO "$ARCHIVO2" > "$CARPETA_CONFIGURACION"/todo-a2.txt
+    cat "$CARPETA_CONFIGURACION"/todo-a2.txt "$ARCHIVO_CONTEXTO" > "$ARCHIVO2"
+    grep -v $CONTEXTO "$ARCHIVO1" > "$CARPETA_CONFIGURACION"/todo-a.txt
+    cat "$CARPETA_CONFIGURACION"/todo-a.txt "$ARCHIVO_CONTEXTO" > "$ARCHIVO1"
+fi
+
+sleep $TIEMPO_ACTUALIZACION
+
+echo "update"
+done
