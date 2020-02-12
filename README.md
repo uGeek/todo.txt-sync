@@ -3,7 +3,7 @@ Synchronize your todo.txt file with another by context or project
 
 ## Download
 ```
-https://raw.githubusercontent.com/uGeek/todo.txt-sync/master/todo.txt-sync
+wget https://raw.githubusercontent.com/uGeek/todo.txt-sync/master/todo.txt-sync
 ```
 
 ## Run with screen
