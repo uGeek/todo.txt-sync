@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# todo.txt-sync v0.2 . Synchronize your todo.txt file with another by context or project
+# todo.txt-sync v0.3 . Synchronize your todo.txt file with another by context or project
 # Copyright (C) 2020 Angel. uGeek
 # ugeekpodcast@gmail.com
 #
@@ -12,7 +12,9 @@ A1="nombre del usuario1"
 A2="nombre del usuario2"
 
 ARCHIVO1=~/syncthing/todo/todo.txt
+RUTA_ARCHIVO1=~/syncthing/todo/
 ARCHIVO2=~/syncthing/todo2/todo.txt
+RUTA_ARCHIVO2=~/syncthing/todo2/
 ARCHIVO_CONTEXTO=~/.config/todotxt-sync/contexto.txt
 CARPETA_CONFIGURACION=~/.config/todotxt-sync
 
@@ -50,6 +52,33 @@ if [ "$(grep "$CONTEXTO" ""$ARCHIVO2"")" != "$(cat ""$ARCHIVO_CONTEXTO"")" ]; th
 fi
 
 sleep $TIEMPO_ACTUALIZACION
+
+
+if [ "$(find $RUTA_ARCHIVO1 -name "*sync-conflict*")" != "" ];
+then
+echo "Sincronizando y añadiendo archivos con conflictos"
+ls $RUTA_ARCHIVO1 -1 | grep "sync-conflict" > $CARPETA_CONFIGURACION/sc
+while read LINEA; do cat $RUTA_ARCHIVO1$LINEA ; done < $CARPETA_CONFIGURACION/sc > $CARPETA_CONFIGURACION/all
+cat $CARPETA_CONFIGURACION/all | awk '!($0 in a) {a[$0];print}' > $CARPETA_CONFIGURACION/all_clean
+diff $ARCHIVO1 $CARPETA_CONFIGURACION/all_clean | grep ">" | cut -d " " -f2- > $CARPETA_CONFIGURACION/sync-conflict
+while read LINEA; do echo "$LINEA +sync-conflict"; done < $CARPETA_CONFIGURACION/sync-conflict >> $ARCHIVO1
+rm $RUTA_ARCHIVO1/\#* $RUTA_ARCHIVO1/*\~ $CARPETA_CONFIGURACION/all $CARPETA_CONFIGURACION/sc $RUTA_ARCHIVO1/*sync-conflict* $CARPETA_CONFIGURACION/all_clean 2>/dev/null
+fi
+
+
+
+if [ "$(find $RUTA_ARCHIVO2 -name "*sync-conflict*")" != "" ];
+then
+echo "Sincronizando y añadiendo archivos con conflictos"
+ls $RUTA_ARCHIVO2 -1 | grep "sync-conflict" > $CARPETA_CONFIGURACION/sc
+while read LINEA; do cat $RUTA_ARCHIVO2$LINEA ; done < $CARPETA_CONFIGURACION/sc > $CARPETA_CONFIGURACION/all
+cat $CARPETA_CONFIGURACION/all | awk '!($0 in a) {a[$0];print}' > $CARPETA_CONFIGURACION/all_clean
+diff $ARCHIVO2 $CARPETA_CONFIGURACION/all_clean | grep ">" | cut -d " " -f2- > $CARPETA_CONFIGURACION/sync-conflict
+while read LINEA; do echo "$LINEA +sync-conflict"; done < $CARPETA_CONFIGURACION/sync-conflict >> $ARCHIVO2
+rm $RUTA_ARCHIVO2/\#* $RUTA_ARCHIVO2/*\~ $CARPETA_CONFIGURACION/all $CARPETA_CONFIGURACION/sc $RUTA_ARCHIVO2/*sync-conflict* $CARPETA_CONFIGURACION/all_clean 2>/dev/null
+fi
+
+
 
 echo "update"
 done
